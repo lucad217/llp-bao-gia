@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "LLP - Báo giá nhanh & Cấu hình thiết bị hiện trường",
+  "short_name": "LLP Báo giá",
+  "description": "Công cụ báo giá và cấu hình thiết bị cho đội ngũ Sales và Kỹ thuật LLP",
+  "lang": "vi-VN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f1f5f9",
+  "theme_color": "#102a43",
+  "icons": [
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#102a43">
+  <meta name="description" content="Báo giá nhanh và cấu hình thiết bị hiện trường - Công ty TNHH Viễn Thông LLP">
+  <title>LLP | Báo giá nhanh & Cấu hình thiết bị</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./assets/logo-llp.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      navy: { 950:'#102a43', 900:'#16324f', 800:'#1f4568', 700:'#285b84' },
+      steel: { 50:'#f5f7fa', 100:'#e9eef3', 200:'#d4dde6', 500:'#66788a', 700:'#3e5062' }
+    }}}};
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800">
+  <header class="sticky top-0 z-30 bg-navy-950 text-white shadow-lg">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
+      <div class="flex min-w-0 items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-white p-1">
+          <img src="./assets/logo-llp.png" alt="LLP" class="h-full w-full object-contain" onerror="this.style.display='none'">
+          <span class="font-black text-navy-900">LLP</span>
+        </div>
+        <div class="min-w-0">
+          <div class="truncate text-sm font-bold tracking-wide">BÁO GIÁ NHANH</div>
+          <div class="truncate text-xs text-slate-300">Cấu hình thiết bị hiện trường</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="networkState" class="hidden rounded-full bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200 sm:inline-flex">● Online</span>
+        <button id="installBtn" class="hidden rounded-lg bg-white/10 px-3 py-2 text-xs font-semibold hover:bg-white/20">Cài ứng dụng</button>
+        <button id="exportBackupBtn" class="rounded-lg bg-white/10 p-2 hover:bg-white/20" title="Sao lưu dữ liệu"><i data-lucide="download" class="h-5 w-5"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl space-y-5 px-3 py-4 sm:px-5 sm:py-6">
+    <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div class="rounded-xl bg-white p-4 shadow-sm"><div class="text-xs text-slate-500">Báo giá đã lưu</div><div id="statQuotes" class="mt-1 text-2xl font-bold text-navy-900">0</div></div>
+      <div class="rounded-xl bg-white p-4 shadow-sm"><div class="text-xs text-slate-500">Danh mục thiết bị</div><div id="statProducts" class="mt-1 text-2xl font-bold text-navy-900">0</div></div>
+      <div class="rounded-xl bg-white p-4 shadow-sm"><div class="text-xs text-slate-500">Tổng giá trị đang xem</div><div id="statTotal" class="mt-1 truncate text-xl font-bold text-navy-900">0 ₫</div></div>
+      <div class="rounded-xl bg-white p-4 shadow-sm"><div class="text-xs text-slate-500">Lãi gộp nội bộ</div><div id="statProfit" class="mt-1 truncate text-xl font-bold text-emerald-700">0 ₫</div></div>
+    </section>
+
+    <nav class="flex gap-2 overflow-x-auto rounded-xl bg-white p-2 shadow-sm">
+      <button class="tab-btn active" data-tab="quote"><i data-lucide="calculator"></i> Lập báo giá</button>
+      <button class="tab-btn" data-tab="catalog"><i data-lucide="package"></i> Danh mục</button>
+      <button class="tab-btn" data-tab="history"><i data-lucide="history"></i> Lịch sử</button>
+      <button class="tab-btn" data-tab="settings"><i data-lucide="settings"></i> Thiết lập</button>
+    </nav>
+
+    <section id="tab-quote" class="tab-panel space-y-4">
+      <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
+        <div class="space-y-4">
+          <div class="rounded-xl bg-white p-4 shadow-sm">
+            <div class="mb-3 flex items-center justify-between"><h2 class="font-bold text-navy-950">1. Thông tin báo giá</h2><span id="quoteVersion" class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">Bản nháp</span></div>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label class="field">Tên khách hàng / Chủ đầu tư<input id="customer" placeholder="Nhập tên khách hàng"></label>
+              <label class="field">Tên dự án / Công trình<input id="project" placeholder="Tên dự án hoặc địa điểm"></label>
+              <label class="field">Địa chỉ<input id="customerAddress" placeholder="Địa chỉ khách hàng"></label>
+              <label class="field">Điện thoại / Email<input id="customerContact" placeholder="Thông tin liên hệ"></label>
+              <label class="field">Số báo giá<input id="quoteNo" placeholder="...../NTL/LLP26"></label>
+              <label class="field">Ngày báo giá<input id="quoteDate" type="date"></label>
+              <label class="field">Hiệu lực báo giá (ngày)<input id="validDays" type="number" min="1" value="15"></label>
+              <label class="field">Trạng thái<select id="quoteStatus"><option>Nháp</option><option>Đã gửi</option><option>Đang đàm phán</option><option>Thắng (Won)</option><option>Thua (Lost)</option></select></label>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-4 shadow-sm">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><h2 class="font-bold text-navy-950">2. Cấu hình thiết bị & vật tư</h2><button id="addManualBtn" class="secondary-btn"><i data-lucide="plus"></i> Thêm dòng tự do</button></div>
+            <div class="relative mb-3"><i data-lucide="search" class="absolute left-3 top-3 h-4 w-4 text-slate-400"></i><input id="productSearch" class="w-full rounded-lg border border-slate-200 py-2.5 pl-9 pr-3 outline-none focus:border-blue-500" placeholder="Tìm SKU, tên thiết bị, thương hiệu, thông số..."></div>
+            <div id="searchResults" class="mb-3 grid max-h-56 grid-cols-1 gap-2 overflow-auto sm:grid-cols-2"></div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[850px] text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="p-2">Thiết bị / vật tư</th><th class="p-2">ĐVT</th><th class="p-2">SL</th><th class="p-2">Giá VT</th><th class="p-2">VAT VT</th><th class="p-2">Nhân công</th><th class="p-2">VAT NC</th><th class="p-2">CK %</th><th class="p-2">Thành tiền</th><th class="p-2"></th></tr></thead>
+                <tbody id="quoteLines"><tr><td colspan="10" class="p-6 text-center text-slate-400">Chưa có thiết bị. Tìm kiếm và chọn thiết bị ở phía trên.</td></tr></tbody>
+              </table>
+            </div>
+            <p class="mt-2 text-xs text-slate-500">Giá vật tư và nhân công được tính riêng; VAT tính theo từng dòng và từng nhóm chi phí. Biên lợi nhuận chỉ hiển thị nội bộ, không xuất trên báo giá khách hàng.</p>
+          </div>
+
+          <div class="rounded-xl bg-white p-4 shadow-sm">
+            <h2 class="mb-3 font-bold text-navy-950">3. Chi phí bổ sung & phương án</h2>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label class="field">Chiết khấu toàn báo giá (%)<input id="globalDiscount" type="number" min="0" max="100" step="0.1" value="0"></label>
+              <label class="field">Vận chuyển (trước VAT)<input id="shipping" type="number" min="0" value="0"></label>
+              <label class="field">Bốc xếp (trước VAT)<input id="handling" type="number" min="0" value="0"></label>
+              <label class="field">Kiểm định / thử nghiệm (trước VAT)<input id="inspection" type="number" min="0" value="0"></label>
+              <label class="field">VAT chi phí bổ sung<select id="extraVat"><option value="0">0%</option><option value="0.08">8%</option><option value="0.1">10%</option></select></label>
+              <label class="field">Phương án<select id="optionName"><option>Option A - Cao cấp</option><option>Option B - Tiết kiệm</option></select></label>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2"><button id="saveOptionBtn" class="secondary-btn"><i data-lucide="copy-plus"></i> Lưu phương án hiện tại</button><button id="compareOptionsBtn" class="secondary-btn"><i data-lucide="columns-2"></i> So sánh phương án</button></div>
+            <div id="optionsSummary" class="mt-3 grid gap-2 sm:grid-cols-2"></div>
+          </div>
+        </div>
+
+        <aside class="space-y-4">
+          <div class="rounded-xl bg-navy-950 p-4 text-white shadow-sm">
+            <h2 class="mb-3 font-bold">Tổng hợp báo giá</h2>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between gap-3"><span class="text-slate-300">Vật tư sau CK</span><b id="sumMaterial">0 ₫</b></div>
+              <div class="flex justify-between gap-3"><span class="text-slate-300">Nhân công sau CK</span><b id="sumLabor">0 ₫</b></div>
+              <div class="flex justify-between gap-3"><span class="text-slate-300">Chi phí bổ sung</span><b id="sumExtra">0 ₫</b></div>
+              <div class="border-t border-white/20 pt-2"><div class="flex justify-between"><span class="text-slate-300">Trước thuế</span><b id="sumBefore">0 ₫</b></div><div class="mt-1 flex justify-between"><span class="text-slate-300">VAT 8%</span><b id="sumVat8">0 ₫</b></div><div class="mt-1 flex justify-between"><span class="text-slate-300">VAT 10%</span><b id="sumVat10">0 ₫</b></div><div class="mt-1 flex justify-between"><span class="text-slate-300">VAT 0%</span><b id="sumVat0">0 ₫</b></div></div>
+              <div class="flex justify-between border-t border-white/20 pt-3 text-lg"><span class="font-bold">Sau thuế</span><b id="sumAfter" class="text-amber-300">0 ₫</b></div>
+            </div>
+            <div class="mt-4 rounded-lg bg-white/10 p-3"><div class="text-xs text-slate-300">Lãi gộp nội bộ (ước tính)</div><div id="grossProfit" class="mt-1 text-xl font-bold text-emerald-300">0 ₫</div><div class="mt-1 text-xs text-slate-300">Margin: <b id="marginPct">0%</b> · Markup: <b id="markupPct">0%</b></div></div>
+            <button id="previewBtn" class="mt-4 w-full rounded-lg bg-amber-400 px-4 py-3 font-bold text-navy-950 hover:bg-amber-300"><i data-lucide="eye" class="mr-1 inline h-4 w-4"></i> Xem trước báo giá</button>
+            <div class="mt-2 grid grid-cols-2 gap-2"><button id="saveQuoteBtn" class="rounded-lg bg-white/10 px-3 py-3 text-sm font-semibold hover:bg-white/20"><i data-lucide="save" class="mr-1 inline h-4 w-4"></i>Lưu báo giá</button><button id="newQuoteBtn" class="rounded-lg bg-white/10 px-3 py-3 text-sm font-semibold hover:bg-white/20"><i data-lucide="file-plus" class="mr-1 inline h-4 w-4"></i>Báo giá mới</button></div>
+          </div>
+          <div class="rounded-xl bg-white p-4 shadow-sm"><h3 class="font-bold text-navy-950">Chia sẻ nhanh</h3><p class="mt-1 text-xs text-slate-500">Tạo PDF trước, sau đó chia sẻ tệp qua ứng dụng hỗ trợ trên thiết bị.</p><div class="mt-3 grid grid-cols-2 gap-2"><button id="pdfBtn" class="secondary-btn"><i data-lucide="file-pdf"></i> Xuất PDF</button><button id="excelBtn" class="secondary-btn"><i data-lucide="file-spreadsheet"></i> Xuất Excel</button><button id="shareBtn" class="secondary-btn col-span-2"><i data-lucide="share-2"></i> Chia sẻ tệp / liên kết</button></div></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="tab-catalog" class="tab-panel hidden space-y-4">
+      <div class="rounded-xl bg-white p-4 shadow-sm">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 class="font-bold text-navy-950">Thư viện thiết bị & vật tư</h2><p class="text-xs text-slate-500">Dữ liệu mẫu có thể sửa, thêm mới, sao lưu và phục hồi.</p></div><button id="addProductBtn" class="primary-btn"><i data-lucide="plus"></i> Thêm thiết bị</button></div>
+        <div class="mb-3 flex flex-wrap gap-2"><input id="catalogSearch" class="min-w-[200px] flex-1 rounded-lg border border-slate-200 px-3 py-2" placeholder="Lọc danh mục..."><button id="importCatalogBtn" class="secondary-btn"><i data-lucide="upload"></i> Nhập Excel/JSON</button><button id="exportCatalogBtn" class="secondary-btn"><i data-lucide="download"></i> Xuất danh mục</button><input id="catalogFile" type="file" accept=".json,.xlsx,.xls" class="hidden"></div>
+        <div class="overflow-x-auto"><table class="w-full min-w-[850px] text-sm"><thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="p-2">SKU</th><th class="p-2">Tên thiết bị</th><th class="p-2">Hãng / thông số</th><th class="p-2">ĐVT</th><th class="p-2">COGS</th><th class="p-2">Giá bán</th><th class="p-2">VAT</th><th class="p-2">Phụ kiện</th><th class="p-2"></th></tr></thead><tbody id="catalogRows"></tbody></table></div>
+      </div>
+      <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">Giá COGS và lãi gộp là dữ liệu nội bộ. Không gửi bản xuất khách hàng nếu chưa kiểm tra nội dung và quyền truy cập.</div>
+    </section>
+
+    <section id="tab-history" class="tab-panel hidden">
+      <div class="rounded-xl bg-white p-4 shadow-sm"><div class="mb-3 flex items-center justify-between"><div><h2 class="font-bold text-navy-950">Lịch sử báo giá</h2><p class="text-xs text-slate-500">Lưu phiên bản theo từng khách hàng/dự án trên thiết bị này.</p></div><button id="historyExportBtn" class="secondary-btn"><i data-lucide="download"></i> Xuất lịch sử</button></div><div id="historyList" class="space-y-2"></div></div>
+    </section>
+
+    <section id="tab-settings" class="tab-panel hidden space-y-4">
+      <div class="rounded-xl bg-white p-4 shadow-sm"><h2 class="mb-3 font-bold text-navy-950">Thông tin doanh nghiệp & điều khoản</h2><div class="grid gap-3 sm:grid-cols-2"><label class="field">Tên công ty<input id="companyName"></label><label class="field">Điện thoại<input id="companyPhone"></label><label class="field sm:col-span-2">Địa chỉ<input id="companyAddress"></label><label class="field">Mã số thuế<input id="companyTax"></label><label class="field">Website<input id="companyWebsite"></label><label class="field">Ngân hàng<input id="bankName"></label><label class="field">Số tài khoản<input id="bankAccount"></label><label class="field sm:col-span-2">Chủ tài khoản<input id="bankOwner"></label><label class="field sm:col-span-2">Điều khoản / ghi chú<textarea id="terms" rows="4"></textarea></label></div><button id="saveSettingsBtn" class="primary-btn mt-3"><i data-lucide="save"></i> Lưu thiết lập</button></div>
+      <div class="rounded-xl bg-white p-4 shadow-sm"><h2 class="mb-2 font-bold text-navy-950">Dữ liệu & ngoại tuyến</h2><p class="text-sm text-slate-600">Dữ liệu được lưu cục bộ trong trình duyệt bằng LocalStorage. Hãy sao lưu định kỳ. Dữ liệu không tự đồng bộ sang máy khác nếu chưa kết nối máy chủ/backend.</p><div class="mt-3 flex flex-wrap gap-2"><button id="backupBtn" class="secondary-btn"><i data-lucide="database-backup"></i> Sao lưu toàn bộ</button><button id="restoreBtn" class="secondary-btn"><i data-lucide="database"></i> Phục hồi sao lưu</button><input id="backupFile" type="file" accept=".json" class="hidden"></div></div>
+    </section>
+  </main>
+
+  <dialog id="productDialog" class="w-[min(680px,calc(100%-24px))] rounded-2xl p-0 shadow-2xl">
+    <form id="productForm" class="space-y-3 p-5">
+      <div class="flex items-center justify-between"><h3 id="productDialogTitle" class="text-lg font-bold text-navy-950">Thêm thiết bị</h3><button type="button" class="close-dialog rounded-lg p-2 hover:bg-slate-100"><i data-lucide="x"></i></button></div>
+      <input id="editProductId" type="hidden">
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="field">Mã SKU<input id="pSku" required></label><label class="field">Tên thiết bị<input id="pName" required></label>
+        <label class="field">Đơn vị tính<input id="pUnit" value="Cái" required></label><label class="field">Hãng / xuất xứ<input id="pBrand"></label>
+        <label class="field">Thông số kỹ thuật<input id="pSpec"></label><label class="field">VAT<select id="pVat"><option value="0">0%</option><option value="0.08">8%</option><option value="0.1">10%</option></select></label>
+        <label class="field">Đơn giá gốc COGS<input id="pCost" type="number" min="0" value="0"></label><label class="field">Giá bán niêm yết<input id="pPrice" type="number" min="0" value="0"></label>
+        <label class="field sm:col-span-2">Phụ kiện bắt buộc (SKU, phân cách bằng dấu phẩy)<input id="pRequired" placeholder="CAB-001,PSU-001"></label>
+        <label class="field sm:col-span-2">Phụ kiện gợi ý (SKU, phân cách bằng dấu phẩy)<input id="pSuggested" placeholder="BOX-001,BRACKET-001"></label>
+        <label class="field">Giá bán nhân công<input id="pLabor" type="number" min="0" value="0"></label><label class="field">Giá vốn nhân công<input id="pLaborCost" type="number" min="0" value="0"></label><label class="field">ĐVT nhân công<input id="pLaborUnit" value="Bộ"></label>
+      </div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="close-dialog secondary-btn">Hủy</button><button class="primary-btn" type="submit">Lưu thiết bị</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="manualDialog" class="w-[min(560px,calc(100%-24px))] rounded-2xl p-0 shadow-2xl">
+    <form id="manualForm" class="space-y-3 p-5"><div class="flex justify-between"><h3 class="text-lg font-bold text-navy-950">Thêm dòng tự do</h3><button type="button" class="close-dialog p-2"><i data-lucide="x"></i></button></div>
+      <div class="grid gap-3 sm:grid-cols-2"><label class="field sm:col-span-2">Tên hàng hóa / công việc<input id="mName" required></label><label class="field">ĐVT<input id="mUnit" value="Cái"></label><label class="field">Số lượng<input id="mQty" type="number" min="0" step="0.01" value="1"></label><label class="field">Đơn giá vật tư<input id="mPrice" type="number" min="0" value="0"></label><label class="field">VAT vật tư<select id="mVat"><option value="0">0%</option><option value="0.08">8%</option><option value="0.1">10%</option></select></label><label class="field">Nhân công / ĐVT<input id="mLabor" type="number" min="0" value="0"></label><label class="field">VAT nhân công<select id="mLaborVat"><option value="0">0%</option><option value="0.08">8%</option><option value="0.1">10%</option></select></label><label class="field">COGS vật tư<input id="mCost" type="number" min="0" value="0"></label><label class="field">COGS nhân công<input id="mLaborCost" type="number" min="0" value="0"></label><label class="field">Chiết khấu %<input id="mDiscount" type="number" min="0" max="100" value="0"></label></div>
+      <div class="flex justify-end gap-2"><button type="button" class="close-dialog secondary-btn">Hủy</button><button class="primary-btn">Thêm vào báo giá</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="previewDialog" class="w-[min(1000px,calc(100%-16px))] rounded-xl p-0 shadow-2xl">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b p-3"><b class="text-navy-950">Xem trước báo giá LLP</b><div class="flex gap-2"><button id="previewPdfBtn" class="primary-btn">Xuất PDF</button><button type="button" class="close-dialog secondary-btn">Đóng</button></div></div>
+    <div class="max-h-[80vh] overflow-auto bg-slate-200 p-2 sm:p-5"><div id="printArea" class="quote-paper"></div></div>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
